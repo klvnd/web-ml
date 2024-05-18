@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam View</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        #video, #image, #default-image {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            width: 600px;
+            height: 400px;
+            display: block;
+            margin: 0 auto;
+        }
+        #video, #image {
+            display: none;
+        }
+        #default-image {
+            display: block;
+            object-fit: contain; /* Maintain aspect ratio */
+        }
+        .file-input-wrapper, .camera-button-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .file-input-wrapper input[type="file"], .camera-button-wrapper button {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+        }
+        .file-input-label, .camera-button-label {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px 20px;
+            background-color: #fff;
+            cursor: pointer;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Plant Disease Analysis</h1>
+        <video id="video" autoplay></video>
+        <img id="image" alt="Selected Image">
+        <img id="default-image" src="default-image.jpg" alt="Default Image">
+        <div class="file-input-wrapper">
+            <span class="file-input-label">Choose Image</span>
+            <input type="file" id="image-input" accept="image/*">
+        </div>
+        <div class="camera-button-wrapper">
+            <span class="camera-button-label">Activate Camera</span>
+            <button id="camera-button">Activate Camera</button>
+        </div>
+
+        <script>
+            const video = document.getElementById('video');
+            const image = document.getElementById('image');
+            const defaultImage = document.getElementById('default-image');
+            const imageInput = document.getElementById('image-input');
+            const cameraButton = document.getElementById('camera-button');
+
+            function startWebcam() {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        image.style.display = 'none';
+                        defaultImage.style.display = 'none';
+                    })
+                    .catch(err => {
+                        console.error("Error accessing the camera: ", err);
+                    });
+            }
+
+            imageInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    const imgSrc = e.target.result;
+                    video.style.display = 'none';
+                    image.style.display = 'block';
+                    defaultImage.style.display = 'none';
+                    image.src = imgSrc;
+                };
+
+                reader.readAsDataURL(file);
+
+                // Stop the webcam
+                if (video.srcObject) {
+                    const tracks = video.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+            });
+
+            cameraButton.addEventListener('click', startWebcam);
+        </script>
+    </div>
+</body>
+</html>
